@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONEYCOMEIN | 資產管理系統</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --pearl-white: #FDFDFD; --soft-gray: #F4F4F4; --matte-gold: #C5A059; --champagne: #E2C275; --text-dark: #4A4A4A; }
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: var(--soft-gray); color: var(--text-dark); margin: 0; padding: 10px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { text-align: center; padding: 15px 0; border-bottom: 2px solid var(--champagne); margin-bottom: 15px; }
+        h1 { color: var(--matte-gold); letter-spacing: 2px; margin: 0; font-size: 1.5rem; }
+        
+        .card { background: var(--pearl-white); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 15px; border-top: 4px solid var(--matte-gold); }
+        .dashboard { background: linear-gradient(135deg, #4A4A4A, #2D2D2D); color: white; border-top: none; }
+        
+        /* 響應式 Grid 排版 */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .full-width { grid-column: span 2; }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+        }
+
+        label { font-size: 0.8rem; color: #888; margin-bottom: 4px; display: block; }
+        .dash-label { color: #AAA; }
+        .val { font-size: 1.1rem; font-weight: bold; }
+        
+        .form-group { display: flex; flex-direction: column; }
+        input, select { 
+            padding: 12px; 
+            border: 1px solid #DDD; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        
+        button { 
+            background: linear-gradient(135deg, var(--champagne), var(--matte-gold)); 
+            color: white; border: none; padding: 14px; border-radius: 8px; 
+            cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; 
+            font-size: 1rem; transition: 0.3s;
+        }
+        button:active { transform: scale(0.98); opacity: 0.9; }
+
+        .section-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--matte-gold); display: flex; align-items: center; }
+        .section-title::before { content: ""; width: 4px; height: 18px; background: var(--champagne); margin-right: 8px; border-radius: 2px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        th { background: #f8f8f8; color: #888; text-align: left; padding: 8px; border-bottom: 1px solid #EEE; }
+        td { padding: 10px 8px; border-bottom: 1px solid #F5F5F5; }
+        .stock-code { font-weight: bold; color: var(--matte-gold); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header><h1>MONEYCOMEIN</h1></header>
+
+    <div class="card dashboard">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 15px;">
+            <span style="color: var(--champagne); font-weight: bold; letter-spacing: 1px;">最新資產概況</span>
+            <span id="lastUpdateDate" style="font-size: 0.7rem; color: #AAA;">最後同步: --</span>
+        </div>
+        <div class="grid">
+            <div><label class="dash-label">帳戶存款</label><div id="dispDeposit" class="val">$0</div></div>
+            <div><label class="dash-label">股票市值</label><div id="dispMarket" class="val">$0</div></div>
+            <div><label class="dash-label">總資產</label><div id="dispTotal" class="val" style="color: var(--champagne);">$0</div></div>
+            <div><label class="dash-label">投入成本</label><div id="dispCost" class="val">$0</div></div>
+            <div class="full-width" style="border-top: 1px solid #555; padding-top: 15px; display: flex; justify-content: space-around;">
+                <div style="text-align: center;"><label class="dash-label">總盈餘</label><div id="dispProfit" style="font-size: 1.4rem; font-weight: bold;">$0</div></div>
+                <div style="text-align: center;"><label class="dash-label">報酬率</label><div id="dispROI" style="font-size: 1.4rem; font-weight: bold;">0.00%</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">現有庫存股票</div>
+        <div style="overflow-x: auto;">
+            <table id="inventoryTable">
+                <thead>
+                    <tr><th>代碼</th><th>名稱</th><th>數量（股）</th><th>現價（股）</th></tr>
+                </thead>
+                <tbody id="inventoryBody">
+                    <tr><td colspan="4" style="text-align:center; color:#ccc;">讀取中...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">帳戶存入紀錄</div>
+        <div class="grid">
+            <div class="form-group"><label>日期</label><input type="date" id="accDate"></div>
+            <div class="form-group"><label>存入金額</label><input type="number" id="accAmount" placeholder="金額"></div>
+            <div class="full-width"><label>備註</label><input type="text" id="accNote" placeholder="例如：薪資存入"></div>
+        </div>
+        <button id="btnAccount" onclick="submitAccount()">確認提交存入</button>
+    </div>
+
+    <div class="card">
+        <div class="section-title">股票交易登記</div>
+        <div class="grid">
+            <div class="form-group"><label>日期</label><input type="date" id="tradeDate"></div>
+            <div class="form-group"><label>類型</label>
+                <select id="tradeType">
+                    <option value="進">買進 (0.1425%)</option>
+                    <option value="出">賣出 (0.4425%)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>代碼</label><input type="text" id="tradeCode" placeholder="2330"></div>
+            <div class="form-group"><label>名稱</label><input type="text" id="tradeName" list="stockOptions">
+                <datalist id="stockOptions"></datalist>
+            </div>
+            <div class="form-group"><label>股數</label><input type="number" id="tradeQty"></div>
+            <div class="form-group"><label>單價</label><input type="number" id="tradePrice"></div>
+            <div class="form-group full-width"><label>預估費用 (手續費/稅)</label><input type="number" id="tradeFee" readonly style="background:#F0F0F0;"></div>
+        </div>
+        <button id="btnTrade" onclick="submitTrade()">儲存交易明細</button>
+    </div>
+</div>
+
+<script>
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwtq6jzwqTOyAPK4LVaHNj3Wrad_03tKgZWDI01NP8G8pLiXD4hNbeEG7BnTzp2ykNfag/exec'; 
+    let localProductList = [];
+
+    window.onload = function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('accDate').value = today;
+        document.getElementById('tradeDate').value = today;
+        fetchProductList();
+        fetchLastProfit();
+        fetchInventory();
+    };
+
+    function fetchInventory() {
+        fetch(GAS_URL + "?action=getInventory").then(res => res.json()).then(data => {
+            const tbody = document.getElementById('inventoryBody');
+            tbody.innerHTML = data.length ? "" : '<tr><td colspan="4" style="text-align:center;">無持有股票</td></tr>';
+            data.forEach(item => {
+                tbody.innerHTML += `<tr><td class="stock-code">${item.code}</td><td>${item.name}</td><td>${item.qty.toLocaleString()}</td><td>$${Number(item.price).toFixed(2)}</td></tr>`;
+            });
+        });
+    }
+
+    function fetchLastProfit() {
+        fetch(GAS_URL + "?action=getLastProfit").then(res => res.json()).then(data => {
+            if (!data.date) return;
+            document.getElementById('lastUpdateDate').innerText = '最後同步: ' + data.date;
+            // 使用 Math.round 確保顯示為整數
+            document.getElementById('dispDeposit').innerText = '$' + Math.round(data.deposit).toLocaleString();
+            document.getElementById('dispMarket').innerText = '$' + Math.round(data.marketValue).toLocaleString();
+            document.getElementById('dispTotal').innerText = '$' + Math.round(data.totalAssets).toLocaleString();
+            document.getElementById('dispCost').innerText = '$' + Math.round(data.cost).toLocaleString();
+            
+            const profit = Math.round(data.profit);
+            document.getElementById('dispProfit').innerText = '$' + profit.toLocaleString();
+            document.getElementById('dispROI').innerText = data.roi;
+            
+            const color = profit >= 0 ? '#E2C275' : '#FF6B6B';
+            document.getElementById('dispProfit').style.color = color;
+            document.getElementById('dispROI').style.color = color;
+        });
+    }
+
+    function fetchProductList() {
+        fetch(GAS_URL + "?action=getProductList").then(res => res.json()).then(data => {
+            localProductList = data;
+            const datalist = document.getElementById('stockOptions');
+            data.forEach(item => {
+                let option = document.createElement('option');
+                option.value = item.name;
+                option.label = item.code;
+                datalist.appendChild(option);
+            });
+        });
+    }
+
+    document.getElementById('tradeCode').addEventListener('input', function() {
+        const found = localProductList.find(i => i.code === this.value.trim());
+        if (found) document.getElementById('tradeName').value = found.name;
+    });
+
+    function calculatePreview() {
+        const qty = Number(document.getElementById('tradeQty').value);
+        const price = Number(document.getElementById('tradePrice').value);
+        const type = document.getElementById('tradeType').value;
+        if (qty && price) {
+            const amount = qty * price;
+            let fee = (type === "進") ? Math.max(20, Math.floor(amount * 0.001425)) : Math.max(20, Math.floor(amount * 0.004425));
+            document.getElementById('tradeFee').value = fee;
+        }
+    }
+    ['tradeQty', 'tradePrice', 'tradeType'].forEach(id => document.getElementById(id).addEventListener('input', calculatePreview));
+
+        // --- 帳戶存入驗證邏輯 ---
+    function submitAccount() {
+        const amt = document.getElementById('accAmount').value;
+        if (amt === "" || Number(amt) <= 0) {
+            const confirmAction = confirm("金額小於或等於 0，確定要送出嗎？");
+            if (!confirmAction) return; // 使用者選取消則中斷
+        }
+        sendToGas({ 
+            action: "addAccountLog", data: { date: document.getElementById('accDate').value, amount: amt, note: document.getElementById('accNote').value 
+            } 
+        }, 'btnAccount');
+    }
+    // --- 交易登記驗證邏輯 ---
+    function submitTrade() {
+        const qty = document.getElementById('tradeQty').value;
+        const price = document.getElementById('tradePrice').value;
+        const code = document.getElementById('tradeCode').value;
+
+        if (qty === "" || Number(qty) <= 0 || price === "" || Number(price) <= 0 || code === "") {
+            alert("請確認股票代碼、股數與單價皆已填寫!");
+            return; // 直接中斷不送出
+        }
+
+        sendToGas({ 
+            action: "addTransaction", 
+            data: { 
+                date: document.getElementById('tradeDate').value, 
+                type: document.getElementById('tradeType').value, 
+                code: code, 
+                name: document.getElementById('tradeName').value, 
+                qty: qty, 
+                price: price 
+            } 
+        }, 'btnTrade');
+    }
+
+    function sendToGas(payload, btnId) {
+        const btn = document.getElementById(btnId);
+        btn.innerText = '處理中...';
+        btn.disabled = true;
+        fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
+        .then(() => { 
+            alert('送出成功！'); 
+            location.reload(); 
+        })
+        .catch(err => {
+            alert('發生錯誤：' + err);
+            btn.innerText = '重新送出';
+            btn.disabled = false;
+        });
+    }
+    
+</script>
+</body>
+</html>
