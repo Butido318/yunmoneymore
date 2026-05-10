@@ -13,14 +13,14 @@
         h1 { color: var(--matte-gold); letter-spacing: 2px; margin: 0; font-size: 1.5rem; }
         
         .card { background: var(--pearl-white); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 15px; border-top: 4px solid var(--matte-gold); }
-        .dashboard { background: linear-gradient(135deg, #4A4A4A, #2D2D2D); color: white; border-top: none; }
-        /* 新的深緋紅金專業面板配色 */
+               
+        /* 調整後的深紅漸層（較輕盈版） */
         .dashboard { 
-            /* 使用帶有深緋紅到黑色的漸層，保留專業感與能量感 */
-            background: linear-gradient(135deg, #8B0000 0%, #4A0000 50%, #1A0000 100%); 
+            /* 將起點色從深紅調至稍亮的緋紅 (#A52A2A)，結點色調至深栗色 (#2A0000) */
+            background: linear-gradient(135deg, #A52A2A 0%, #600000 50%, #2A0000 100%); 
             color: white; 
             border-top: none; 
-            box-shadow: 0 4px 15px rgba(139, 0, 0, 0.2); /* 淡淡的紅暈陰影 */
+            box-shadow: 0 4px 15px rgba(165, 42, 42, 0.2);
         }
         
         /* 響應式 Grid 排版 */
@@ -76,7 +76,7 @@
         <div class="grid">
             <div><label class="dash-label">帳戶存款</label><div id="dispDeposit" class="val">$0</div></div>
             <div><label class="dash-label">股票市值</label><div id="dispMarket" class="val">$0</div></div>
-            <div><label class="dash-label">總資產</label><div id="dispTotal" class="val" style="color: var(--champagne);">$0</div></div>
+            <div><label class="dash-label">總資產</label><div id="dispTotal" class="val" style="color: white !important;">$0</div></div>
             <div><label class="dash-label">投入成本</label><div id="dispCost" class="val">$0</div></div>
             <div class="full-width" style="border-top: 1px solid #555; padding-top: 15px; display: flex; justify-content: space-around;">
                 <div style="text-align: center;"><label class="dash-label">總盈餘</label><div id="dispProfit" style="font-size: 1.4rem; font-weight: bold;">$0</div></div>
