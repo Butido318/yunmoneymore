@@ -57,10 +57,34 @@
         .section-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--matte-gold); display: flex; align-items: center; }
         .section-title::before { content: ""; width: 4px; height: 18px; background: var(--champagne); margin-right: 8px; border-radius: 2px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
-        th { background: #f8f8f8; color: #888; text-align: left; padding: 8px; border-bottom: 1px solid #EEE; }
-        td { padding: 10px 8px; border-bottom: 1px solid #F5F5F5; }
-        .stock-code { font-weight: bold; color: var(--matte-gold); }
+/* 表格基礎與手機優化 */
+        table { 
+            width: 100%; 
+            table-layout: fixed; /* 強制固定比例，防止手機端擠壓 */
+            border-collapse: collapse; 
+            margin-top: 10px; 
+            font-size: 0.85rem; 
+        }
+
+        th { 
+            background: #f8f8f8; 
+            color: #888; 
+            text-align: left; 
+            padding: 10px 4px; /* 縮減間距以適應手機 */
+            border-bottom: 1px solid #EEE; 
+            font-weight: 400;
+        }
+
+        td { 
+            padding: 12px 4px; 
+            border-bottom: 1px solid #F5F5F5; 
+            word-break: break-all; /* 防止長名稱撐破表格 */
+        }
+
+        /* 漲跌顏色邏輯 */
+        .profit-red { color: #FF4D4D; font-weight: bold; } 
+        .loss-green { color: #2ECC71; font-weight: bold; } 
+        .neutral-gray { color: #888; }
     </style>
 </head>
 <body>
@@ -89,9 +113,14 @@
         <div class="section-title">現有庫存股票</div>
         <div style="overflow-x: auto;">
             <table id="inventoryTable">
-                <thead>
-                    <tr><th>代碼</th><th>名稱</th><th>數量（股）</th><th>現價（股）</th></tr>
-                </thead>
+     <thead>
+      <tr>
+        <th style="width: 30%;">名稱</th>
+        <th style="width: 20%;">數量</th>
+        <th style="width: 25%;">現價</th>
+        <th style="width: 25%;">成本</th>
+      </tr>
+    </thead>
                 <tbody id="inventoryBody">
                     <tr><td colspan="4" style="text-align:center; color:#ccc;">讀取中...</td></tr>
                 </tbody>
@@ -148,8 +177,23 @@
         fetch(GAS_URL + "?action=getInventory").then(res => res.json()).then(data => {
             const tbody = document.getElementById('inventoryBody');
             tbody.innerHTML = data.length ? "" : '<tr><td colspan="4" style="text-align:center;">無持有股票</td></tr>';
+            
             data.forEach(item => {
-                tbody.innerHTML += `<tr><td class="stock-code">${item.code}</td><td>${item.name}</td><td>${item.qty.toLocaleString()}</td><td>$${Number(item.price).toFixed(2)}</td></tr>`;
+                const curPrice = Number(item.price);
+                const avgCost = Number(item.avgCost);
+                
+                // 顏色判斷邏輯
+                let colorClass = "neutral-gray";
+                if (curPrice > avgCost) colorClass = "profit-red";
+                else if (curPrice < avgCost) colorClass = "loss-green";
+
+                tbody.innerHTML += `
+                <tr>
+                    <td style="font-weight:700;">${item.name}</td>
+                    <td>${Number(item.qty).toLocaleString()}</td>
+                    <td class="${colorClass}">$${curPrice.toFixed(2)}</td>
+                    <td style="color:#666; font-size:0.75rem;">$${avgCost.toFixed(2)}</td>
+                </tr>`;
             });
         });
     }
