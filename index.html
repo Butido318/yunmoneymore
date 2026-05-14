@@ -194,14 +194,71 @@
         fetchInventory();
     };
 
+// 初始化抓取商品清單
+    function fetchProductList() {
+        fetch(GAS_URL + "?action=getProductList")
+        .then(res => res.json())
+        .then(data => {
+            localProductList = data;
+            const datalist = document.getElementById('stockOptions');
+            datalist.innerHTML = ''; 
+            data.forEach(item => {
+                let option = document.createElement('option');
+                option.value = item.name; 
+                datalist.appendChild(option);
+            });
+            console.log("清單載入成功", localProductList);
+        });
+    }
+
+    // 雙向連動：代碼找名稱
+    function handleCodeInput() {
+        const inputCode = document.getElementById('tradeCode').value.trim();
+        const nameInput = document.getElementById('tradeName');
+        const match = localProductList.find(item => item.code === inputCode);
+        if (match) nameInput.value = match.name;
+    }
+
+    // 雙向連動：名稱找代碼
+    function handleNameInput() {
+        const inputName = document.getElementById('tradeName').value;
+        const codeInput = document.getElementById('tradeCode');
+        const match = localProductList.find(item => item.name === inputName);
+        if (match) codeInput.value = match.code;
+    }
+
+    // 獲取庫存表格資料
     function fetchInventory() {
-        fetch(GAS_URL + "?action=getInventory").then(res => res.json()).then(data => {
+        fetch(GAS_URL + "?action=getInventory")
+        .then(res => res.json())
+        .then(data => {
             const tbody = document.getElementById('inventoryBody');
-            tbody.innerHTML = data.length ? "" : '<tr><td colspan="4" style="text-align:center;">無持有股票</td></tr>';
+            tbody.innerHTML = data.length ? "" : '<tr><td colspan="4" style="text-align:center;">無庫存資料</td></tr>';
             
             data.forEach(item => {
                 const curPrice = Number(item.price);
-                const avgCost 
+                const avgCost = Number(item.avgCost);
+                
+                let colorClass = "neutral-gray";
+                if (curPrice > avgCost) colorClass = "profit-red";
+                else if (curPrice < avgCost) colorClass = "loss-green";
+
+                tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <div class="stock-info">
+                            <span class="code">${item.code}</span>
+                            <span class="name">${item.name}</span>
+                        </div>
+                    </td>
+                    <td>${Number(item.qty).toLocaleString()}</td>
+                    <td class="${colorClass}">$${curPrice.toFixed(2)}</td>
+                    <td style="color:#666; font-size:0.75rem;">$${avgCost.toFixed(2)}</td>
+                </tr>`;
+            });
+        });
+    }
+    
     function fetchLastProfit() {
         fetch(GAS_URL + "?action=getLastProfit").then(res => res.json()).then(data => {
             if (!data.date) return;
