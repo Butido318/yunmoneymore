@@ -169,8 +169,12 @@
                     <option value="出">賣出 (0.4425%)</option>
                 </select>
             </div>
-            <div class="form-group"><label>代碼</label><input type="text" id="tradeCode" placeholder="2330"></div>
-            <div class="form-group"><label>名稱</label><input type="text" id="tradeName" list="stockOptions">
+
+            <div class="form-group"><label>股票代碼</label>
+                <input type="text" id="tradeCode" placeholder="輸入代碼" oninput="handleCodeInput()">
+            </div>
+            <div class="form-group"><label>股票名稱</label>
+                <input type="text" id="tradeName" list="stockOptions" placeholder="或輸入名稱" oninput="handleNameInput()">
                 <datalist id="stockOptions"></datalist>
             </div>
             <div class="form-group"><label>股數</label><input type="number" id="tradeQty"></div>
