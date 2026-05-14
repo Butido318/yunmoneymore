@@ -201,29 +201,7 @@
             
             data.forEach(item => {
                 const curPrice = Number(item.price);
-                const avgCost = Number(item.avgCost);
-                
-                // 顏色判斷邏輯
-                let colorClass = "neutral-gray";
-                if (curPrice > avgCost) colorClass = "profit-red";
-                else if (curPrice < avgCost) colorClass = "loss-green";
-
-                tbody.innerHTML += `
-                <tr>
-                    <td>
-                        <div class="stock-info">
-                            <span class="code">${item.code}</span>
-                            <span class="name">${item.name}</span>
-                        </div>
-                    </td>
-                    <td>${Number(item.qty).toLocaleString()}</td>
-                    <td class="${colorClass}">$${curPrice.toFixed(2)}</td>
-                    <td style="color:#666; font-size:0.75rem;">$${avgCost.toFixed(2)}</td>
-                </tr>`;
-            });
-        });
-    }
-
+                const avgCost 
     function fetchLastProfit() {
         fetch(GAS_URL + "?action=getLastProfit").then(res => res.json()).then(data => {
             if (!data.date) return;
